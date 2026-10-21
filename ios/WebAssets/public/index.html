@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="description" content="Jantar Mantar Chalo: a multiplayer satire game. Protesters fight their way across Delhi to Jantar Mantar while Dilli Police try to stop them.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E✊%3C/text%3E%3C/svg%3E">
+<title>Jantar Mantar Chalo</title>
+<style>
+:root{--saffron:#ff9933;--green:#138808;--ink:#1d1a16;--paper:#f6eedd}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#8fae63;font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;color:var(--ink)}
+canvas{display:block;touch-action:none;cursor:crosshair}
+#menu{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(30,20,10,.35),rgba(20,12,5,.82));z-index:5;padding:16px;overflow:auto}
+#menu.hide{display:none}
+/* "get the Android app" bar: browsers only (index.html's script hides it in the app and on iOS) */
+#getapp{display:none;align-items:center;gap:10px;width:100%;max-width:720px;margin:0 auto 10px;padding:8px 10px;background:linear-gradient(90deg,#1d1a16,#3a2a1a);color:#fff;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.35);flex-shrink:0}
+#getapp.on{display:flex}
+#getapp img{width:44px;height:44px;border-radius:10px;flex-shrink:0;background:#f6eedd}
+#getapp .t{flex:1;min-width:0;line-height:1.25}
+#getapp b{display:block;font-size:14.5px}
+#getapp small{font-size:12px;color:#d9c9ae}
+#getapp a{flex-shrink:0;background:linear-gradient(90deg,#138808,#2ea82b);color:#fff;text-decoration:none;font-weight:900;font-size:14px;padding:9px 14px;border-radius:10px;box-shadow:0 3px 0 #0b5c05;white-space:nowrap}
+#getapp a:active{transform:translateY(2px);box-shadow:0 1px 0 #0b5c05}
+#getapp .x{flex-shrink:0;border:none;background:none;color:#b8a78c;font-size:22px;line-height:1;padding:2px 4px;cursor:pointer}
+.card{background:var(--paper);border-radius:18px;max-width:720px;width:100%;padding:26px 24px 18px;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative;overflow:hidden;margin:auto}
+.card:before{content:"";position:absolute;left:0;right:0;top:0;height:9px;background:linear-gradient(90deg,var(--saffron) 33.3%,#fff 33.3% 66.6%,var(--green) 66.6%)}
+h1{font-size:clamp(32px,6.5vw,54px);font-weight:900;letter-spacing:-1.5px;line-height:1}
+h1 span{color:#c0392b}
+.hi{font-size:20px;color:#8a4b2a;font-weight:700;margin-top:6px}
+.tag{margin:8px 0 14px;color:#5b4a3a;font-size:15px;line-height:1.45}
+#name{width:100%;font-size:18px;padding:12px 14px;border-radius:10px;border:2px solid #d8c7a8;background:#fff;outline:none;margin-bottom:14px;font-family:inherit}
+#name:focus{border-color:var(--saffron)}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.role{border:3px solid #e2d3b6;border-radius:14px;padding:12px;cursor:pointer;background:#fffaf0;transition:transform .15s}
+.role:hover{transform:translateY(-2px)}
+.role.sel{border-color:var(--saffron);background:#fff3e0;box-shadow:0 0 0 3px rgba(255,153,51,.25)}
+.role[data-r=C].sel{border-color:#1f4e9c;background:#e8f0ff;box-shadow:0 0 0 3px rgba(31,78,156,.2)}
+.role .ic{font-size:30px}
+.role b{display:block;font-size:17px;margin:4px 0}
+.role p{font-size:13px;color:#5b4a3a;line-height:1.45}
+.role .keys{margin-top:6px;font-size:12px;color:#7a6650;line-height:1.8}
+.btns{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+.btn{font-size:20px;font-weight:900;padding:14px;border:none;border-radius:12px;color:#fff;cursor:pointer;letter-spacing:.5px;font-family:inherit}
+#play{background:linear-gradient(90deg,#ff7f11,#ff9933);box-shadow:0 6px 0 #b35900}
+#practice{background:#6d5a44;box-shadow:0 6px 0 #3e3226;font-size:15px}
+.btn:active{transform:translateY(3px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+#status{font-size:13px;margin:10px 0 0;color:#5b4a3a;min-height:18px}
+#status b{color:#2e7d32}
+.help{font-size:12.5px;color:#6b5a48;margin-top:10px;line-height:1.7}
+kbd{background:#fff;border:1px solid #cdbb98;border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:11px}
+.disc{font-size:11px;color:#9a8670;margin-top:8px}
+#mob{position:fixed;right:12px;bottom:220px;display:none;z-index:3;flex-direction:column;gap:10px}
+#mob.on{display:flex}
+#mob.land{flex-direction:row;right:8px;gap:8px}
+.mb{width:64px;height:64px;border-radius:50%;border:3px solid rgba(255,255,255,.85);font-weight:900;font-size:11px;color:#fff;background:rgba(255,120,20,.88);box-shadow:0 4px 12px rgba(0,0,0,.3);font-family:inherit;touch-action:none;user-select:none;-webkit-user-select:none}
+#mob.land .mb{width:52px;height:52px;font-size:10px}
+.mb.mini{width:44px;height:44px;font-size:15px;background:rgba(40,30,20,.72);border-color:rgba(255,255,255,.55);color:#f3e9d8}
+.mb.editing{outline:3px dashed #ffd54f;outline-offset:3px;box-shadow:0 0 16px rgba(255,213,79,.75);touch-action:none}
+#meta{position:fixed;display:none;z-index:3;gap:8px}
+#meta.on{display:flex}
+/* control editing (touch) */
+#ctrledit{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);display:none;z-index:6;align-items:center;gap:10px;background:rgba(25,18,10,.9);color:#fff;padding:10px 12px;border-radius:12px;font-size:13px;font-weight:700;white-space:nowrap}
+#ctrledit.on{display:flex}
+#ctrledit button{border:none;border-radius:8px;padding:8px 12px;font-weight:900;font-family:inherit;cursor:pointer;color:#fff}
+#edDone{background:#ff9933}
+#edReset{background:#5d4037}
+/* key bindings (pc): collapsed by default so the menu stays one screen */
+#opts{display:flex;gap:8px;margin-top:10px}
+#opts button{flex:1;border:2px solid #d8c7a8;background:#fffaf0;border-radius:10px;padding:8px;font-weight:800;font-family:inherit;cursor:pointer;color:#3e2f22;font-size:13px}
+#opts button:active{transform:translateY(1px)}
+.kbdet{margin-top:8px}
+.kbdet summary{cursor:pointer;font-weight:800;font-size:12.5px;color:#7a6650}
+.kbgrid{display:grid;grid-template-columns:1fr 1fr;gap:2px 22px;margin-top:6px}
+@media (max-width:520px){.kbgrid{grid-template-columns:1fr}}
+.kbrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 0}
+.kbtn{min-width:96px;border:2px solid #d8c7a8;background:#fff;border-radius:8px;padding:3px 8px;font-weight:800;font-family:inherit;cursor:pointer;color:#3e2f22;font-size:12px}
+.mb.b2{background:rgba(90,140,60,.9)}.mb.b3{background:rgba(31,78,156,.9)}.mb.b4{background:rgba(120,120,120,.9)}
+.muddas{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 14px}.mlab{width:100%;font-size:12px;font-weight:800;color:#7a6650}
+.mchip{border:2px solid #e2d3b6;background:#fffaf0;border-radius:20px;padding:6px 10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:#3e2f22}
+.mchip.sel{border-color:var(--mc);background:var(--mc);color:#fff;box-shadow:0 2px 0 rgba(0,0,0,.2)}
+#support{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:8px 16px;border:2px solid #f3b6c0;border-radius:24px;background:#fff0f3;color:#c2185b;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;transition:transform .15s,box-shadow .15s}
+#support:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(194,24,91,.2)}
+#support .h{display:inline-block;animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
+#qrpop{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(20,12,5,.72)}
+#qrpop.on{display:flex}
+.qrcard{background:var(--paper);border-radius:18px;max-width:340px;width:100%;padding:22px 20px 18px;text-align:center;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:pop .22s ease-out}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+.qrcard h3{font-size:20px;font-weight:900;color:#c2185b}
+.qrcard p{font-size:13.5px;color:#5b4a3a;line-height:1.5;margin:6px 0 12px}
+.qrcard img{width:100%;max-width:280px;aspect-ratio:1440/1760;object-fit:cover;object-position:50% 52%;border-radius:12px;background:#f1f5fe;display:block;margin:0 auto}
+.qrcard .x{position:absolute;top:8px;right:10px;border:none;background:none;font-size:24px;line-height:1;color:#9a8670;cursor:pointer;padding:4px 8px}
+.qrcard .thx{font-size:12px;color:#9a8670;margin-top:10px}
+@media (max-width:520px){.roles{grid-template-columns:1fr}.btns{grid-template-columns:1fr}
+ #getapp{gap:8px}#getapp img{width:36px;height:36px}#getapp b{font-size:13.5px}#getapp small,#getapp .w{display:none}#getapp a{padding:8px 11px;font-size:13px}}
+/* touch devices: show tap instructions, hide mouse/keyboard hints, and compact the menu so it fits without scrolling */
+.keys .tk{display:none}
+@media (hover:none) and (pointer:coarse){
+ .keys .dk{display:none}.keys .tk{display:inline}
+ .help{display:none}
+ .kbopt{display:none}
+ .btn,.mchip,#support{touch-action:manipulation}
+ #menu{padding:10px}
+ .card{max-width:620px;padding:14px 16px 10px;border-radius:14px}
+ h1{font-size:clamp(22px,6vw,36px);letter-spacing:-1px}
+ .hi{font-size:13px;margin-top:3px}
+ .tag{font-size:12px;margin:5px 0 10px;line-height:1.35}
+ #name{font-size:16px;padding:9px 12px;margin-bottom:10px;border-radius:8px}
+ .roles{gap:8px;margin-bottom:10px}
+ .role{padding:8px 10px;border-radius:10px}
+ .role .ic{font-size:20px}
+ .role b{font-size:14.5px;margin:2px 0}
+ .role p{font-size:11.5px;line-height:1.3}
+ .role .keys{font-size:10.5px;line-height:1.45;margin-top:4px}
+ .muddas{margin:-2px 0 10px;gap:5px}
+ .mchip{font-size:11.5px;padding:4px 9px}
+ .btns{gap:8px}
+ .btn{font-size:16px;padding:10px;border-radius:10px}
+ #practice{font-size:12.5px}
+ #status{font-size:11.5px;margin:8px 0 0;min-height:13px}
+ .disc{font-size:10px;margin-top:5px}
+ #support{margin-top:7px;padding:5px 12px;font-size:12px}
+ #getapp{max-width:620px;margin-bottom:8px;padding:6px 8px;border-radius:12px}
+ #getapp a,#getapp .x{touch-action:manipulation}
+}
+/* short screens (landscape phones, small windows): squeeze even harder */
+@media (orientation:landscape) and (max-height:560px){
+ #menu{padding:8px}
+ .card{padding:10px 14px 8px;max-width:660px}
+ h1{font-size:22px}
+ .hi{font-size:11.5px;margin-top:1px}
+ .tag{font-size:11px;margin:3px 0 7px}
+ #name{font-size:16px;padding:7px 10px;margin-bottom:7px}
+ .roles{gap:6px;margin-bottom:7px}
+ .role{padding:6px 8px}
+ .role .ic{font-size:16px}
+ .role b{font-size:13px;margin:1px 0}
+ .role p{font-size:10.5px;line-height:1.25}
+ .role .keys{font-size:9.5px;line-height:1.35;margin-top:2px}
+ .muddas{margin:-1px 0 7px;gap:4px}
+ .mchip{font-size:10.5px;padding:3px 8px}
+ .btns{gap:6px}
+ .btn{font-size:14px;padding:8px}
+ #practice{font-size:11.5px}
+ #status{font-size:10px;margin:5px 0 0;min-height:12px}
+ .disc{font-size:9px;margin-top:3px}
+ #support{margin-top:4px;padding:4px 10px;font-size:11px}
+ #getapp{max-width:660px;margin-bottom:6px;padding:4px 8px;gap:8px}
+ #getapp img{width:30px;height:30px;border-radius:7px}
+ #getapp b{font-size:12.5px}#getapp small{font-size:10.5px}
+ #getapp a{font-size:12px;padding:6px 10px}
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="meta"><button class="mb mini" id="bEdit" aria-label="Rearrange buttons">✥</button><button class="mb mini" id="bTeam" aria-label="Switch team">⇄</button><button class="mb mini" id="bMenu" aria-label="Menu">☰</button></div>
+<div id="mob"><button class="mb" id="bAct">NAARA</button><button class="mb b3" id="bE">LIFT</button><button class="mb b2" id="bGas">GAS</button><button class="mb b4" id="bRun">DASH</button></div>
+<div id="ctrledit"><span>Drag the buttons anywhere you like</span><button id="edReset" type="button">Reset</button><button id="edDone" type="button">Done</button></div>
+<div id="menu">
+ <div id="getapp" role="region" aria-label="Get the Android app">
+  <img src="logo-128.webp" alt="" width="44" height="44">
+  <div class="t"><b>Get the Android app</b><small>Fullscreen, smoother, and Practice works offline</small></div>
+  <a href="jantar-mantar-chalo.apk" download>⬇ Download<span class="w"> APK</span></a>
+  <button class="x" type="button" aria-label="Dismiss">×</button>
+ </div>
+ <div class="card">
+  <h1>JANTAR MANTAR <span>CHALO</span></h1>
+  <div class="hi">जंतर मंतर चलो! ✊🚧👮 · Multiplayer</div>
+  <p class="tag">Build a kafila, dodge the police, reach <b>Jantar Mantar</b> and hold the dharna. Or be the police and stop them.</p>
+  <input id="name" maxlength="18" placeholder="Your name (e.g. Bunty from Burari)">
+   <div class="roles">
+    <div class="role sel" data-r="P"><div class="ic">✊</div><b>Andolankari</b><p>Walk into people to grow your kafila. Reach Jantar Mantar.</p><div class="keys"><span class="dk" id="dkP">🖱️ Point to walk · <kbd>Click</kbd> to act<br>Hold <kbd>Click</kbd> at a barricade to push<br>Hold <kbd>Right-click</kbd> to run (your kafila runs too)</span><span class="tk">👆 Drag to walk · drag farther to RUN<br>Second-finger tap or button to act · hold to push</span></div></div>
+    <div class="role" data-r="C"><div class="ic">👮</div><b>Dilli Police</b><p>Break kafilas with the lathi, lift leaders onto the bus. Watch out for big crowds!</p><div class="keys"><span class="dk" id="dkC">🖱️ Point to walk · <kbd>Click</kbd> lathi<br>Hold <kbd>Right-click</kbd> to aim tear gas, release to throw<br>Your constables lift whoever your lathi exposes</span><span class="tk">👆 Drag to walk · Tap LATHI or second-finger tap<br>Hold GAS to aim, release to throw · constables lift for you</span></div></div>
+   </div>
+  <div class="muddas" id="muddas"></div>
+  <div class="btns"><button class="btn" id="play">PLAY ONLINE ▶</button><button class="btn" id="practice">Practice offline</button></div>
+  <div id="status">Checking server…</div>
+  <div id="opts"><button id="optMute" type="button"></button><button id="optQ" type="button"></button></div>
+  <div class="help" id="helpLine"><kbd>M</kbd> mute · <kbd>Q</kbd> graphics · <kbd>T</kbd> switch team · <kbd>Esc</kbd> menu</div>
+  <div id="kb" class="kbopt"></div>
+  <div class="disc">Satire. All characters, shops and brands are fictional. 🤖 = AI player.<br><a href="https://bugswriter.com/jantar-mantar-game" target="_blank" rel="noopener">ℹ️ About the game</a></div>
+  <button id="support" type="button"><span class="h">❤️</span> Support the game</button>
+ </div>
+</div>
+<div id="qrpop" role="dialog" aria-modal="true" aria-label="Support the game">
+ <div class="qrcard">
+  <button class="x" type="button" aria-label="Close">×</button>
+  <h3>❤️ Support the game</h3>
+  <p>Jantar Mantar Chalo is free and made by one person. If you enjoyed it, pay whatever you like. Never expected, always appreciated.</p>
+  <img alt="Google Pay UPI QR code for Suraj Kushwah" data-src="https://bugswriter.com/jantar-mantar-game/img/upi-qr.png">
+  <div class="thx">Thanks for playing! 🙏</div>
+ </div>
+</div>
+<script>
+(function(){const pop=document.getElementById('qrpop'),img=pop.querySelector('img');
+ const open=()=>{if(!img.src)img.src=img.dataset.src;pop.classList.add('on');};const close=()=>pop.classList.remove('on');
+ document.getElementById('support').addEventListener('click',open);pop.querySelector('.x').addEventListener('click',close);
+ pop.addEventListener('click',e=>{if(e.target===pop)close();});addEventListener('keydown',e=>{if(e.key==='Escape'&&pop.classList.contains('on')){close();e.stopImmediatePropagation();}},true);})();
+</script>
+<script>
+// the Android app adds "JantarMantarChaloApp" to its user agent and opens the bundled copy from appassets.androidplatform.net
+(function(){const ua=navigator.userAgent,bar=document.getElementById('getapp');
+ const inApp=/JantarMantarChaloApp/.test(ua)||location.host==='appassets.androidplatform.net';
+ const ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+ let off=false;try{off=localStorage.getItem('jm_getapp_off')==='1';}catch(e){}
+ if(inApp||ios||off)return;bar.classList.add('on');
+ bar.querySelector('.x').addEventListener('click',()=>{bar.classList.remove('on');try{localStorage.setItem('jm_getapp_off','1');}catch(e){}});})();
+</script>
+<script src="../shared/world.js"></script>
+<script src="../shared/sim.js"></script>
+<script src="../shared/snapcodec.js"></script>
+<script src="client.js"></script>
+</body>
+</html>
